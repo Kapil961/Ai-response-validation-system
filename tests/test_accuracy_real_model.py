@@ -11,35 +11,73 @@ def accuracy_judge():
     return AccuracyJudge(embedding_model=model)
 
 
-def test_real_model_paraphrased_answer(accuracy_judge):
-    reference = "The capital of India is New Delhi."
-    response = "New Delhi serves as India's capital."
-
+@pytest.mark.parametrize(
+    "reference,response",
+    [
+        (
+            "The capital of India is New Delhi.",
+            "New Delhi serves as India's capital.",
+        ),
+        (
+            "Machine learning enables computers to learn from data.",
+            "Computers use machine learning to identify patterns in data.",
+        ),
+        (
+            "Water freezes at zero degrees Celsius.",
+            "At 0 degrees Celsius, water changes into ice.",
+        ),
+    ],
+)
+def test_real_model_paraphrased_answers(
+    accuracy_judge, reference, response
+):
     result = accuracy_judge.evaluate(response, reference)
 
     assert result["status"] == "evaluated"
     assert result["evidence"] is not None
     assert "Semantic similarity:" in result["evidence"]
+    assert result["score"] >= 70
+    assert result["passed"] is True
 
-
-def test_real_model_additional_correct_details(accuracy_judge):
-    reference = "The capital of India is New Delhi."
-    response = (
-        "New Delhi is the capital of India "
-        "and is the seat of the national government."
-    )
-
+@pytest.mark.parametrize(
+    "reference,response",
+    [
+        (
+            "The capital of India is New Delhi.",
+            "New Delhi is the capital of India and is the seat of the national government.",
+        ),
+        (
+            "Python is a programming language.",
+            "Python is a programming language widely used in data science and automation.",
+        ),
+    ],
+)
+def test_real_model_additional_details(
+    accuracy_judge, reference, response
+):
     result = accuracy_judge.evaluate(response, reference)
 
     assert result["status"] == "evaluated"
     assert result["score"] is not None
-    assert "Semantic similarity:" in result["evidence"]
+    assert result["score"] >= 85
+    assert result["classification"] == "correct"
 
-
-def test_real_model_contradictory_answer(accuracy_judge):
-    reference = "The capital of India is New Delhi."
-    response = "Mumbai is the capital of India, not New Delhi."
-
+@pytest.mark.parametrize(
+    "reference,response",
+    [
+        (
+            "The capital of India is New Delhi.",
+            "Mumbai is the capital of India, not New Delhi.",
+        ),
+        (
+            "Water freezes at zero degrees Celsius.",
+            "Water does not freeze at zero degrees Celsius.",
+        ),
+    ],
+)
+def test_real_model_negation_contradictions(
+    accuracy_judge, reference, response
+):
     result = accuracy_judge.evaluate(response, reference)
 
     assert result["status"] == "evaluated"

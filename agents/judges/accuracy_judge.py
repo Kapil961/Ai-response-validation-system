@@ -1,5 +1,6 @@
 
 import re
+
 from collections import Counter
 from typing import Optional
 
@@ -34,10 +35,6 @@ class AccuracyJudge:
         response: str,
         reference_answer: str,
     ) -> Optional[float]:
-        """
-        Calculate cosine similarity using the existing embedding model.
-        Returns a score between 0 and 100.
-        """
 
         if self.embedding_model is None:
             return None
@@ -59,7 +56,6 @@ class AccuracyJudge:
             return round(max(0.0, similarity) * 100, 2)
 
         except Exception:
-            # Preserve lexical evaluation if embedding calculation fails.
             return None
 
     def evaluate(
@@ -103,7 +99,6 @@ class AccuracyJudge:
                 "status": "evaluated",
             }
 
-        # Calculate lexical F1.
         response_counts = Counter(response_tokens)
         reference_counts = Counter(reference_tokens)
 
@@ -111,39 +106,33 @@ class AccuracyJudge:
             (response_counts & reference_counts).values()
         )
 
-        precision = common / len(response_tokens)
-        recall = common / len(reference_tokens)
+        # Lexical recall measures reference information coverage.
+        lexical_recall = (
+            common / len(reference_tokens)
+        ) * 100
 
-        if precision + recall == 0:
-            f1_score = 0.0
-        else:
-            f1_score = (
-                2 * precision * recall
-            ) / (precision + recall)
-
-        lexical_score = f1_score * 100
-
-        # Calculate semantic similarity using the shared model.
         semantic_score = self.calculate_semantic_similarity(
             response,
             reference_answer,
         )
 
-        # Combine lexical and semantic scores when embeddings are available.
         if semantic_score is not None:
             score = (
-                0.80 * lexical_score
-                + 0.20 * semantic_score
+                0.60 * lexical_recall
+                + 0.40 * semantic_score
             )
-            scoring_method = "combined lexical F1 and semantic similarity"
+            scoring_method = (
+                "combined lexical recall and semantic similarity"
+            )
         else:
-            score = lexical_score
-            scoring_method = "lexical F1 only"
+            score = lexical_recall
+            scoring_method = "lexical recall only"
 
-        # Basic negation-mismatch safeguard.
+        # Existing basic negation safeguard.
         response_has_negation = bool(
             set(response_tokens) & self.NEGATION_TERMS
         )
+
         reference_has_negation = bool(
             set(reference_tokens) & self.NEGATION_TERMS
         )
@@ -157,7 +146,6 @@ class AccuracyJudge:
 
         score = round(score, 2)
 
-        # Classify the result.
         if score >= 85:
             classification = "correct"
         elif score >= 50:
@@ -181,7 +169,7 @@ class AccuracyJudge:
 
         if semantic_score is not None:
             explanation += (
-                f"Lexical F1: {round(lexical_score, 2)}%; "
+                f"Lexical recall: {round(lexical_recall, 2)}%; "
                 f"semantic similarity: {semantic_score}%. "
             )
 
@@ -206,7 +194,7 @@ class AccuracyJudge:
                 f"Matched tokens: {common}; "
                 f"Response tokens: {len(response_tokens)}; "
                 f"Reference tokens: {len(reference_tokens)}; "
-                f"Lexical F1: {round(lexical_score, 2)}%; "
+                f"Lexical recall: {round(lexical_recall, 2)}%; "
                 f"Semantic similarity: "
                 f"{semantic_score if semantic_score is not None else 'unavailable'}"
             ),

@@ -130,7 +130,7 @@ def test_semantic_similarity_handles_extra_details():
     )
 
     assert result["score"] > 85
-    assert result["score"] < 100
+    assert result["score"] <= 100
     assert result["classification"] == "correct"
 
 
