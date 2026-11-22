@@ -1,3 +1,4 @@
+
 from uuid import uuid4
 
 from backend.models.evaluation import EvaluationResult, JudgeResult
@@ -16,7 +17,16 @@ class EvaluationOrchestrator:
         self.retrieval_engine = retrieval_engine
 
         self.relevance_judge = RelevanceJudge()
-        self.accuracy_judge = AccuracyJudge()
+
+        # Reuse the embedding model already loaded by RetrievalEngine.
+        self.accuracy_judge = AccuracyJudge(
+            embedding_model=getattr(
+                self.retrieval_engine,
+                "embedding_model",
+                None,
+            )
+        )
+
         self.hallucination_judge = HallucinationJudge()
         self.completeness_judge = CompletenessJudge()
         self.verdict_agent = VerdictAgent()
@@ -36,14 +46,15 @@ class EvaluationOrchestrator:
                     result["text"] for result in retrieved_results
                 )
 
+        # Evaluate relevance.
         relevance = JudgeResult(
             **self.relevance_judge.evaluate(
                 submission.question,
-                submission.ai_response
+                submission.ai_response,
             )
         )
 
-        # Accuracy continues to use a trusted reference answer.
+        # Accuracy continues to use the trusted reference answer.
         accuracy = JudgeResult(
             **self.accuracy_judge.evaluate(
                 response=submission.ai_response,
@@ -51,7 +62,7 @@ class EvaluationOrchestrator:
             )
         )
 
-        # Faithfulness can now use either supplied or retrieved evidence.
+        # Evaluate faithfulness using supplied or retrieved evidence.
         faithfulness_data = self.hallucination_judge.evaluate(
             response=submission.ai_response,
             source_document=source_document,
@@ -71,6 +82,7 @@ class EvaluationOrchestrator:
             status=faithfulness_data["status"],
         )
 
+        # Evaluate completeness.
         completeness = JudgeResult(
             **self.completeness_judge.evaluate(
                 question=submission.question,
@@ -78,6 +90,7 @@ class EvaluationOrchestrator:
             )
         )
 
+        # Combine all judge results.
         judge_results = {
             "relevance": relevance,
             "accuracy": accuracy,
