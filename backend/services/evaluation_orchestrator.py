@@ -27,7 +27,13 @@ class EvaluationOrchestrator:
             )
         )
 
-        self.hallucination_judge = HallucinationJudge()
+        self.hallucination_judge = HallucinationJudge(
+    embedding_model=getattr(
+        self.retrieval_engine,
+        "embedding_model",
+        None,
+    )
+)
         self.completeness_judge = CompletenessJudge()
         self.verdict_agent = VerdictAgent()
 
