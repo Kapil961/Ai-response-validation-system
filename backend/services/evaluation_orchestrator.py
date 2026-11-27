@@ -34,7 +34,13 @@ class EvaluationOrchestrator:
         None,
     )
 )
-        self.completeness_judge = CompletenessJudge()
+        self.completeness_judge = CompletenessJudge(
+            embedding_model=getattr(
+                self.retrieval_engine,
+                "embedding_model",
+                None,
+            )
+        )
         self.verdict_agent = VerdictAgent()
 
     def evaluate(self, submission: SubmissionRequest) -> EvaluationResult:

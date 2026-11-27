@@ -47,3 +47,63 @@ def test_question_without_meaningful_concepts():
     assert result["score"] is None
     assert result["passed"] is None
     assert result["status"] == "insufficient_evidence"
+
+class FakeEmbeddingModel:
+
+    def encode(self, texts):
+        embeddings = {
+            "automobiles": [1.0, 0.0],
+            "cars provide convenient personal transportation.": [0.9, 0.1],
+            "advantages": [0.0, 1.0],
+            "cars": [0.9, 0.1],
+        }
+
+        return [
+            embeddings.get(text.lower(), [0.0, 1.0])
+            for text in texts
+        ]
+
+
+def test_semantic_matching_recognizes_paraphrase():
+
+    judge = CompletenessJudge(
+        embedding_model=FakeEmbeddingModel()
+    )
+
+    result = judge.evaluate(
+        question="Explain automobiles.",
+        response="Cars provide convenient personal transportation."
+    )
+
+    assert "automobiles" in result["covered_concepts"]
+    assert result["score"] == 100.0
+
+
+def test_semantic_matching_identifies_missing_concept():
+
+    judge = CompletenessJudge(
+        embedding_model=FakeEmbeddingModel()
+    )
+
+    result = judge.evaluate(
+        question="Explain automobiles and advantages.",
+        response="Cars provide convenient personal transportation."
+    )
+
+    assert "automobiles" in result["covered_concepts"]
+    assert "advantages" in result["missing_concepts"]
+    assert result["score"] == 50.0
+
+
+def test_lexical_fallback_without_embedding_model():
+
+    judge = CompletenessJudge()
+
+    result = judge.evaluate(
+        question="Explain machine learning.",
+        response="Machine learning enables computers to learn."
+    )
+
+    assert result["score"] == 100.0
+    assert result["passed"] is True
+    assert "lexical matching only" in result["explanation"]
