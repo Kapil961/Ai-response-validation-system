@@ -16,7 +16,13 @@ class EvaluationOrchestrator:
     def __init__(self, retrieval_engine=None):
         self.retrieval_engine = retrieval_engine
 
-        self.relevance_judge = RelevanceJudge()
+        self.relevance_judge = RelevanceJudge(
+    embedding_model=getattr(
+        self.retrieval_engine,
+        "embedding_model",
+        None,
+    )
+)
 
         # Reuse the embedding model already loaded by RetrievalEngine.
         self.accuracy_judge = AccuracyJudge(
