@@ -48,21 +48,31 @@ class HallucinationJudge:
             if word not in self.stop_words
         }
 
+
     def split_sentences(self, text: str) -> list:
         if not text or not text.strip():
             return []
+
+        # Normalize line endings.
+        cleaned_text = text.strip().replace("\r\n", "\n")
 
         # Remove numbered-list markers at the beginning of lines.
         cleaned_text = re.sub(
             r"(?m)^[ \t]*\d+[.)][ \t]*",
             "",
-            text.strip()
+            cleaned_text
         )
 
-        # Split sentences without treating decimal numbers
-        # as sentence boundaries.
+        # Split headings ending with a colon onto separate segments.
+        cleaned_text = re.sub(
+            r":\s*\n+",
+            ":\n",
+            cleaned_text
+        )
+
+        # Split at newlines and sentence-ending punctuation.
         sentences = re.split(
-            r"(?<!\d)(?<=[.!?])\s+",
+            r"\n+|(?<!\d)(?<=[.!?])\s+",
             cleaned_text
         )
 
@@ -70,7 +80,9 @@ class HallucinationJudge:
             sentence.strip()
             for sentence in sentences
             if sentence.strip()
+            and not sentence.strip().endswith(":")
         ]
+
 
     def has_negation(self, text: str) -> bool:
         return bool(
@@ -172,6 +184,8 @@ class HallucinationJudge:
         except Exception:
             return None
 
+
+
     def evaluate_claim(
         self,
         claim: str,
@@ -182,6 +196,9 @@ class HallucinationJudge:
                 "claim": claim,
                 "support_score": 0.0,
                 "classification": "contradictory",
+                "matched_evidence": None,
+                "lexical_score": 0.0,
+                "semantic_score": None,
                 "matched_evidence_terms": []
             }
 
@@ -192,61 +209,90 @@ class HallucinationJudge:
                 "claim": claim,
                 "support_score": 0.0,
                 "classification": "potentially_unsupported",
+                "matched_evidence": None,
+                "lexical_score": 0.0,
+                "semantic_score": None,
                 "matched_evidence_terms": []
             }
 
-        # Find the most relevant source sentence using lexical overlap.
-        best_evidence = max(
-            source_sentences,
-            key=lambda sentence: self.calculate_lexical_score(
-                claim,
-                sentence
-            )[0]
-        )
+        evidence_candidates = []
 
-        lexical_score, matched_words = self.calculate_lexical_score(
-            claim,
-            best_evidence
-        )
+        for sentence in source_sentences:
+            evidence_candidates.append(sentence)
 
-        semantic_score = self.calculate_semantic_similarity(
-            claim,
-            [best_evidence]
-        )
+            clauses = re.split(r"[,;]\s*", sentence)
 
-        if semantic_score is not None:
-            total_weight = (
-                self.lexical_weight + self.semantic_weight
+            evidence_candidates.extend(
+                clause.strip()
+                for clause in clauses
+                if clause.strip()
             )
 
-            support_score = (
-                self.lexical_weight * lexical_score
-                + self.semantic_weight * semantic_score
-            ) / total_weight
+        evidence_candidates = list(dict.fromkeys(evidence_candidates))
 
+        best_support_score = -1.0
+        best_lexical_score = 0.0
+        best_semantic_score = None
+        best_evidence = None
+        best_matched_words = []
+
+        for evidence in evidence_candidates:
+            lexical_score, matched_words = (
+                self.calculate_lexical_score(claim, evidence)
+            )
+
+            semantic_score = self.calculate_semantic_similarity(
+                claim,
+                [evidence]
+            )
+
+            if semantic_score is not None:
+                total_weight = (
+                    self.lexical_weight + self.semantic_weight
+                )
+
+                support_score = (
+                    self.lexical_weight * lexical_score
+                    + self.semantic_weight * semantic_score
+                ) / total_weight
+            else:
+                support_score = lexical_score
+
+            if support_score > best_support_score:
+                best_support_score = support_score
+                best_lexical_score = lexical_score
+                best_semantic_score = semantic_score
+                best_evidence = evidence
+                best_matched_words = matched_words
+
+        if best_semantic_score is not None:
             supported = (
-                semantic_score >= self.semantic_threshold * 100
-                and support_score >= self.support_threshold * 100
+                best_semantic_score >= self.semantic_threshold * 100
+                and best_support_score >= self.support_threshold * 100
             )
         else:
-            support_score = lexical_score
-
             supported = (
-                support_score >= self.support_threshold * 100
+                best_support_score >= self.support_threshold * 100
             )
-
-        support_score = round(support_score, 2)
 
         return {
             "claim": claim,
-            "support_score": support_score,
+            "support_score": round(best_support_score, 2),
             "classification": (
                 "supported"
                 if supported
                 else "potentially_unsupported"
             ),
-            "matched_evidence_terms": matched_words
+            "matched_evidence": best_evidence,
+            "lexical_score": round(best_lexical_score, 2),
+            "semantic_score": (
+                round(best_semantic_score, 2)
+                if best_semantic_score is not None
+                else None
+            ),
+            "matched_evidence_terms": best_matched_words
         }
+
 
     def evaluate(
         self,
