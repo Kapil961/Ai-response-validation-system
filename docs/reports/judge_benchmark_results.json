@@ -1,0 +1,292 @@
+{
+    "total_examples": 12,
+    "judge_summary": {
+        "relevance": {
+            "total_examples": 3,
+            "status_accuracy": 1.0,
+            "explanation_coverage": 1.0,
+            "evidence_coverage": 1.0,
+            "evidence_examples_evaluated": 3,
+            "classification_accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "per_class": {
+                "fully_relevant": {
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "f1": 1.0
+                },
+                "partially_relevant": {
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "f1": 1.0
+                },
+                "unrelated": {
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "f1": 1.0
+                }
+            },
+            "confusion_matrix": {
+                "fully_relevant": {
+                    "fully_relevant": 1,
+                    "partially_relevant": 0,
+                    "unrelated": 0
+                },
+                "partially_relevant": {
+                    "fully_relevant": 0,
+                    "partially_relevant": 1,
+                    "unrelated": 0
+                },
+                "unrelated": {
+                    "fully_relevant": 0,
+                    "partially_relevant": 0,
+                    "unrelated": 1
+                }
+            }
+        },
+        "accuracy": {
+            "total_examples": 3,
+            "status_accuracy": 1.0,
+            "explanation_coverage": 1.0,
+            "evidence_coverage": 1.0,
+            "evidence_examples_evaluated": 3,
+            "classification_accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "per_class": {
+                "correct": {
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "f1": 1.0
+                },
+                "incorrect": {
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "f1": 1.0
+                }
+            },
+            "confusion_matrix": {
+                "correct": {
+                    "correct": 2,
+                    "incorrect": 0
+                },
+                "incorrect": {
+                    "correct": 0,
+                    "incorrect": 1
+                }
+            }
+        },
+        "completeness": {
+            "total_examples": 3,
+            "status_accuracy": 1.0,
+            "explanation_coverage": 1.0,
+            "evidence_coverage": 1.0,
+            "evidence_examples_evaluated": 2,
+            "score_band_accuracy": 1.0
+        },
+        "hallucination": {
+            "total_examples": 3,
+            "status_accuracy": 1.0,
+            "explanation_coverage": 1.0,
+            "evidence_coverage": 1.0,
+            "evidence_examples_evaluated": 3,
+            "claim_classification_accuracy": 1.0
+        }
+    },
+    "example_results": [
+        {
+            "id": "REL-001",
+            "judge": "relevance",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 100.0,
+            "explanation_present": true,
+            "expected_classification": "fully_relevant",
+            "actual_classification": "fully_relevant",
+            "classification_correct": true,
+            "evidence_present": true
+        },
+        {
+            "id": "REL-002",
+            "judge": "relevance",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 66.67,
+            "explanation_present": true,
+            "expected_classification": "partially_relevant",
+            "actual_classification": "partially_relevant",
+            "classification_correct": true,
+            "evidence_present": true
+        },
+        {
+            "id": "REL-003",
+            "judge": "relevance",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 0.0,
+            "explanation_present": true,
+            "expected_classification": "unrelated",
+            "actual_classification": "unrelated",
+            "classification_correct": true,
+            "evidence_present": true
+        },
+        {
+            "id": "ACC-001",
+            "judge": "accuracy",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 100.0,
+            "explanation_present": true,
+            "expected_classification": "correct",
+            "actual_classification": "correct",
+            "classification_correct": true,
+            "evidence_present": true
+        },
+        {
+            "id": "ACC-002",
+            "judge": "accuracy",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 100.0,
+            "explanation_present": true,
+            "expected_classification": "correct",
+            "actual_classification": "correct",
+            "classification_correct": true,
+            "evidence_present": true
+        },
+        {
+            "id": "ACC-003",
+            "judge": "accuracy",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 25.0,
+            "explanation_present": true,
+            "expected_classification": "incorrect",
+            "actual_classification": "incorrect",
+            "classification_correct": true,
+            "evidence_present": true
+        },
+        {
+            "id": "COM-001",
+            "judge": "completeness",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 100.0,
+            "explanation_present": true,
+            "expected_min_score": 90,
+            "expected_max_score": null,
+            "score_band_correct": true,
+            "covered_concepts": [
+                "applications",
+                "learning",
+                "machine",
+                "types"
+            ],
+            "missing_concepts": [],
+            "evidence_present": true
+        },
+        {
+            "id": "COM-002",
+            "judge": "completeness",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 50.0,
+            "explanation_present": true,
+            "expected_min_score": null,
+            "expected_max_score": 69.99,
+            "score_band_correct": true,
+            "covered_concepts": [
+                "learning",
+                "machine"
+            ],
+            "missing_concepts": [
+                "applications",
+                "types"
+            ],
+            "evidence_present": true
+        },
+        {
+            "id": "COM-003",
+            "judge": "completeness",
+            "expected_status": "insufficient_evidence",
+            "actual_status": "insufficient_evidence",
+            "status_correct": true,
+            "score": null,
+            "explanation_present": true,
+            "expected_min_score": null,
+            "expected_max_score": null,
+            "score_band_correct": null,
+            "covered_concepts": [],
+            "missing_concepts": [],
+            "evidence_present": null
+        },
+        {
+            "id": "HAL-001",
+            "judge": "hallucination",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 100.0,
+            "explanation_present": true,
+            "expected_claim_classifications": [
+                "supported"
+            ],
+            "actual_claim_classifications": [
+                "supported"
+            ],
+            "claim_classifications_correct": true,
+            "claim_count": 1,
+            "matched_evidence_available": true,
+            "evidence_present": true
+        },
+        {
+            "id": "HAL-002",
+            "judge": "hallucination",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 0.0,
+            "explanation_present": true,
+            "expected_claim_classifications": [
+                "potentially_unsupported"
+            ],
+            "actual_claim_classifications": [
+                "potentially_unsupported"
+            ],
+            "claim_classifications_correct": true,
+            "claim_count": 1,
+            "matched_evidence_available": true,
+            "evidence_present": true
+        },
+        {
+            "id": "HAL-003",
+            "judge": "hallucination",
+            "expected_status": "evaluated",
+            "actual_status": "evaluated",
+            "status_correct": true,
+            "score": 0.0,
+            "explanation_present": true,
+            "expected_claim_classifications": [
+                "contradictory"
+            ],
+            "actual_claim_classifications": [
+                "contradictory"
+            ],
+            "claim_classifications_correct": true,
+            "claim_count": 1,
+            "matched_evidence_available": true,
+            "evidence_present": true
+        }
+    ]
+}
