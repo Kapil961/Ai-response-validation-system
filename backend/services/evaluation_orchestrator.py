@@ -77,6 +77,7 @@ class EvaluationOrchestrator:
             **self.accuracy_judge.evaluate(
                 response=submission.ai_response,
                 reference_answer=submission.reference_answer,
+                source_document=source_document,
             )
         )
 

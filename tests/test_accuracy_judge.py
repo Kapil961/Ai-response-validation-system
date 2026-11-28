@@ -148,3 +148,74 @@ def test_negation_mismatch_limits_accuracy_score():
     assert result["classification"] == "incorrect"
     assert result["passed"] is False
     assert "negation mismatch" in result["explanation"]
+
+
+def test_source_based_supported_response():
+    judge = AccuracyJudge()
+
+    result = judge.evaluate(
+        response="Machine learning enables computers to learn from data.",
+        source_document=(
+            "Machine learning enables computers to learn from data."
+        ),
+    )
+
+    assert result["status"] == "evaluated"
+    assert result["classification"] == "correct"
+    assert result["score"] == 100.0
+    assert result["passed"] is True
+    assert "Source-based evaluation" in result["evidence"]
+
+
+def test_source_based_unsupported_response():
+    judge = AccuracyJudge()
+
+    result = judge.evaluate(
+        response="The Earth is made entirely of chocolate.",
+        source_document=(
+            "Machine learning enables computers to learn from data."
+        ),
+    )
+
+    assert result["status"] == "evaluated"
+    assert result["classification"] == "incorrect"
+    assert result["score"] < 50
+    assert result["passed"] is False
+
+
+def test_source_based_response_with_unsupported_claim():
+    judge = AccuracyJudge()
+
+    result = judge.evaluate(
+        response=(
+            "Machine learning enables computers to learn from data. "
+            "Machine learning was invented on Mars."
+        ),
+        source_document=(
+            "Machine learning enables computers to learn from data."
+        ),
+    )
+
+    assert result["status"] == "evaluated"
+    assert result["score"] < 85
+    assert result["classification"] != "correct"
+    assert result["passed"] is False
+
+
+def test_unsupported_claim_is_not_hidden_by_supported_sentences():
+    judge = AccuracyJudge()
+
+    result = judge.evaluate(
+        response=(
+            "Machine learning enables computers to learn from data. "
+            "Machine learning enables computers to learn from data. "
+            "Machine learning enables computers to learn from data. "
+            "Machine learning was invented on Mars."
+        ),
+        source_document=(
+            "Machine learning enables computers to learn from data."
+        ),
+    )
+
+    assert result["status"] == "evaluated"
+    assert result["passed"] is False
