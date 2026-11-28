@@ -49,7 +49,23 @@ class HallucinationJudge:
         }
 
     def split_sentences(self, text: str) -> list:
-        sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+        if not text or not text.strip():
+            return []
+
+        # Remove numbered-list markers at the beginning of lines.
+        cleaned_text = re.sub(
+            r"(?m)^[ \t]*\d+[.)][ \t]*",
+            "",
+            text.strip()
+        )
+
+        # Split sentences without treating decimal numbers
+        # as sentence boundaries.
+        sentences = re.split(
+            r"(?<!\d)(?<=[.!?])\s+",
+            cleaned_text
+        )
+
         return [
             sentence.strip()
             for sentence in sentences
@@ -194,9 +210,9 @@ class HallucinationJudge:
         )
 
         semantic_score = self.calculate_semantic_similarity(
-    claim,
-    [best_evidence]
-)
+            claim,
+            [best_evidence]
+        )
 
         if semantic_score is not None:
             total_weight = (
@@ -208,8 +224,6 @@ class HallucinationJudge:
                 + self.semantic_weight * semantic_score
             ) / total_weight
 
-            # Require both reasonable semantic similarity and
-            # the configured combined support threshold.
             supported = (
                 semantic_score >= self.semantic_threshold * 100
                 and support_score >= self.support_threshold * 100
